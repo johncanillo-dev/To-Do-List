@@ -1,0 +1,86 @@
+const STORAGE_KEY = 'canillo_todo_v1';
+
+function uid(){return Date.now().toString(36) + Math.random().toString(36).slice(2,8)}
+
+function loadTasks(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')}catch(e){return []}
+}
+
+function saveTasks(tasks){localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))}
+
+function render(tasks, filter='all'){
+  const list = document.getElementById('task-list');
+  list.innerHTML = '';
+  const filtered = tasks.filter(t=> filter==='all' ? true : (filter==='active' ? !t.completed : t.completed));
+  filtered.forEach(task =>{
+    const li = document.createElement('li'); li.className = 'task-item';
+    if(task.completed) li.classList.add('completed');
+
+    // assign a pleasant color per task using hash of id
+    const palette = [getComputedStyle(document.documentElement).getPropertyValue('--p1').trim() || '#ff7aa2', getComputedStyle(document.documentElement).getPropertyValue('--p2').trim() || '#ffd36b', getComputedStyle(document.documentElement).getPropertyValue('--p3').trim() || '#a6f0c6', getComputedStyle(document.documentElement).getPropertyValue('--p4').trim() || '#9ad0ff', getComputedStyle(document.documentElement).getPropertyValue('--p5').trim() || '#c39bff', getComputedStyle(document.documentElement).getPropertyValue('--p6').trim() || '#ffb49a'];
+    const hash = task.id.split('').reduce((s,c)=> s + c.charCodeAt(0),0);
+    const color = palette[hash % palette.length];
+    li.style.setProperty('--color', color);
+
+    const checkbox = document.createElement('input'); checkbox.type='checkbox'; checkbox.checked = task.completed;
+    checkbox.addEventListener('change',()=>{
+      task.completed = checkbox.checked; saveTasks(tasks); render(tasks, currentFilter()); updateCount(tasks);
+    });
+
+    const label = document.createElement('div'); label.className='label'; label.textContent = task.text;
+    label.addEventListener('dblclick',()=> startEdit(li, task, tasks));
+
+    const actions = document.createElement('div'); actions.className='task-actions';
+    const del = document.createElement('button'); del.className='icon-btn'; del.textContent='Delete';
+    del.addEventListener('click',()=>{ const idx = tasks.findIndex(t=>t.id===task.id); if(idx>-1) tasks.splice(idx,1); saveTasks(tasks); render(tasks, currentFilter()); updateCount(tasks); });
+
+    actions.appendChild(del);
+
+    li.appendChild(checkbox); li.appendChild(label); li.appendChild(actions);
+    list.appendChild(li);
+  });
+  if(filtered.length===0){ list.classList.add('empty'); const placeholder = document.createElement('div'); placeholder.className='empty-illustration'; placeholder.textContent='No tasks'; list.appendChild(placeholder);} else { list.classList.remove('empty') }
+}
+
+function startEdit(li, task, tasks){
+  li.innerHTML='';
+  const input = document.createElement('input'); input.className='edit-input'; input.value = task.text;
+  input.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ finishEdit(input.value); }
+    if(e.key==='Escape'){ render(tasks, currentFilter()); }
+  });
+  input.addEventListener('blur', ()=> finishEdit(input.value));
+
+  function finishEdit(val){ val = (val||'').trim(); if(val){ task.text=val; saveTasks(tasks); render(tasks, currentFilter()); updateCount(tasks);} else { const idx = tasks.findIndex(t=>t.id===task.id); if(idx>-1) tasks.splice(idx,1); saveTasks(tasks); render(tasks, currentFilter()); updateCount(tasks); }}
+
+  li.appendChild(input); input.focus(); input.select();
+}
+
+function currentFilter(){ const btn = document.querySelector('.filter-btn.active'); return btn ? btn.dataset.filter : 'all' }
+
+function updateCount(tasks){ const left = tasks.filter(t=>!t.completed).length; document.getElementById('items-left').textContent = left }
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  let tasks = loadTasks();
+  // If there are no tasks yet, seed with demo tasks for immediate preview
+  if(!tasks || tasks.length===0){
+    tasks = [
+      {id:uid(), text:'Welcome — double-click a task to edit it', completed:false},
+      {id:uid(), text:'Click the checkbox to complete a task', completed:false},
+      {id:uid(), text:'Try filters or press Add to create new tasks', completed:false}
+    ];
+    saveTasks(tasks);
+  }
+  render(tasks);
+  updateCount(tasks);
+
+  const form = document.getElementById('task-form'); const input = document.getElementById('task-input');
+  form.addEventListener('submit',(e)=>{ e.preventDefault(); const text = input.value.trim(); if(!text) return; const t = {id:uid(), text, completed:false}; tasks.unshift(t); saveTasks(tasks); input.value=''; render(tasks,currentFilter()); updateCount(tasks); });
+
+  document.getElementById('clear-completed').addEventListener('click', ()=>{ tasks = tasks.filter(t=>!t.completed); saveTasks(tasks); render(tasks,currentFilter()); updateCount(tasks); });
+
+  document.querySelectorAll('.filter-btn').forEach(b=> b.addEventListener('click', ()=>{ document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); render(tasks, b.dataset.filter); }));
+  // nice animation when adding tasks
+  const origRender = render;
+  window.addTaskWithAnim = function(text){ const t = {id:uid(), text, completed:false}; tasks.unshift(t); saveTasks(tasks); const list = document.getElementById('task-list'); origRender(tasks, currentFilter()); const first = list.firstElementChild; if(first){ first.style.transform='translateY(-14px)'; first.style.opacity='0'; setTimeout(()=>{ first.style.transition='transform .28s ease, opacity .28s ease'; first.style.transform='translateY(0)'; first.style.opacity='1'; },10); } updateCount(tasks); }
+});

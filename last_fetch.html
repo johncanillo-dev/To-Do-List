@@ -1,0 +1,76 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Canillo Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">DASHBOARD</div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item active">Dashboard</a>
+        <a class="nav-item">Profile</a>
+        <a class="nav-item">Calendar</a>
+        <a class="nav-item">Pages</a>
+
+        <div class="nav-section">FEATURES</div>
+        <a class="nav-item">Charts</a>
+        <a class="nav-item">Articles</a>
+        <a class="nav-item">Users</a>
+
+        <div class="nav-section">ALL OTHERS</div>
+        <a class="nav-item">Inventar</a>
+        <a class="nav-item">Pictures</a>
+        <a class="nav-item">FAQs</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="search">Canillo Dashboard</div>
+        <div class="profile">Hello, User</div>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <h4>Product Categories By Type</h4>
+          <canvas id="area1"></canvas>
+          <div class="legend small">
+            <span class="legend-item yellow">YELLOW PRODUCTS</span>
+            <span class="legend-item green">GREEN PRODUCTS</span>
+            <span class="legend-item blue">BLUE PRODUCTS</span>
+            <span class="legend-item red">RED PRODUCTS</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Project Section / User Reviews</h4>
+          <canvas id="pie1"></canvas>
+        </div>
+
+        <div class="card">
+          <h4>Item (1) - Item (2) - Item (3) - Item Total</h4>
+          <canvas id="area2"></canvas>
+        </div>
+
+        <div class="card">
+          <h4>Usage Stats % of User Base</h4>
+          <canvas id="area3"></canvas>
+        </div>
+      </section>
+
+      <footer class="footer">Â© 2002-2027 Company name. All Rights Reserved.</footer>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
+
